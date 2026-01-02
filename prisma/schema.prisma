@@ -1,0 +1,19 @@
+ // SEU ARQUIVO prisma/schema.prisma CORRIGIDO:
+
+generator client {
+  // Mude para o provedor padrão para Node.js/JS
+  provider = "prisma-client-js" 
+  // Remova a linha 'output' para usar o local padrão 
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL") 
+}
+
+model User {
+// ... resto do seu modelo User ...
+  id    String  @id @default(auto()) @map("_id") @db.ObjectId
+  email String  @unique
+  senha String?
+}
