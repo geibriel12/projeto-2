@@ -1,24 +1,48 @@
-import 'dotenv/config'; 
+ import 'dotenv/config'; 
 import express from 'express';
-// Importe 'Prisma' junto com 'PrismaClient'
 import { PrismaClient, Prisma } from '@prisma/client'; 
 import cors from 'cors';
+// Importações adicionais necessárias
+import path from 'path';
+import cookieParser from 'cookie-parser'; 
 
 const prisma = new PrismaClient();
 const app = express();
 
 app.use(express.json());
+// Adicionado o middleware de cookies
+app.use(cookieParser());
 
-// CONFIGURAÇÃO DE CORS ATUALIZADA
-// Em 2026, '*' libera para todos os dispositivos, ideal para testes iniciais
+// CONFIGURAÇÃO DE CORS ESPECÍFICA (MANTIDA SUA LÓGICA + credentials: true da imagem):
+const allowedOrigins = ['https://instagramm-n17v.onrender.com', 'http://localhost:5173']; // Adicionei o localhost da imagem
 app.use(cors({
-  origin: '*', 
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
+  credentials: true // Necessário para enviar cookies cross-origin
 }));
 
-// Listar usuários
-app.get('/usuarios', async (req, res) => {
+// --- INÍCIO DAS NOVAS CONFIGURAÇÕES DA IMAGEM ---
+
+// Servir arquivos estáticos da pasta temporária (/tmp)
+app.use("/tmp", express.static(path.join(__dirname, "/tmp")));
+
+// Servir os arquivos de build do frontend (dist)
+// Nota: Certifique-se de que a localização do front-end está correta em relação a este arquivo.
+const frontendDistPath = path.join(__dirname, "../front-end/dist");
+app.use(express.static(frontendDistPath));
+
+// Rotas da API
+// Idealmente, você moveria suas rotas de usuário para um arquivo de rotas separado (ex: ./routes/userRoutes.js)
+// e faria `app.use('/api', userRoutes);` aqui. Por enquanto, estão abaixo:
+
+// Listar usuários (Agora sob /api/usuarios)
+app.get('/api/usuarios', async (req, res) => {
   try {
     const users = await prisma.user.findMany();
     res.json(users);
@@ -28,8 +52,8 @@ app.get('/usuarios', async (req, res) => {
   }
 });
 
-// Criar usuário (ROTA CORRIGIDA COM TRATAMENTO P2002)
-app.post('/usuarios', async (req, res) => {
+// Criar usuário (Agora sob /api/usuarios)
+app.post('/api/usuarios', async (req, res) => {
   try {
     const novoUsuario = await prisma.user.create({
       data: {
@@ -39,19 +63,17 @@ app.post('/usuarios', async (req, res) => {
     });
     res.status(201).json(novoUsuario);
   } catch (error) {
-    // Verificação específica para o erro de e-mail duplicado (P2002)
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       res.status(409).json({ error: 'Este endereço de e-mail já está cadastrado.' });
     } else {
-      // Para todos os outros erros (falha de conexão, etc.)
       console.error('Erro inesperado ao criar usuário:', error);
       res.status(500).json({ error: 'Erro interno do servidor.' });
     }
   }
 });
 
-// Editar usuário
-app.put('/usuarios/:id', async (req, res) => {
+// Editar usuário (Agora sob /api/usuarios/:id)
+app.put('/api/usuarios/:id', async (req, res) => {
   try {
     await prisma.user.update({
       where: { id: req.params.id },
@@ -66,8 +88,8 @@ app.put('/usuarios/:id', async (req, res) => {
   }
 });
 
-// Deletar usuário
-app.delete('/usuarios/:id', async (req, res) => {
+// Deletar usuário (Agora sob /api/usuarios/:id)
+app.delete('/api/usuarios/:id', async (req, res) => {
   try {
     await prisma.user.delete({
       where: { id: req.params.id }
@@ -77,6 +99,13 @@ app.delete('/usuarios/:id', async (req, res) => {
     res.status(500).json({ error: 'Erro ao deletar usuário.' });
   }
 });
+
+// Rota coringa para servir o index.html do frontend para rotas que não são da API
+app.get("*", (req, res) => {
+  res.sendFile(path.join(frontendDistPath, "index.html"));
+});
+
+// --- FIM DAS NOVAS CONFIGURAÇÕES DA IMAGEM ---
 
 // Porta configurada para o Render (sempre usa process.env.PORT)
 const PORT = process.env.PORT || 3000;
