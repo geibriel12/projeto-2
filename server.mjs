@@ -1,13 +1,21 @@
  import 'dotenv/config'; 
 import express from 'express';
-import { PrismaClient } from '@prisma/client'; 
+// Importe 'Prisma' junto com 'PrismaClient'
+import { PrismaClient, Prisma } from '@prisma/client'; 
 import cors from 'cors';
 
 const prisma = new PrismaClient();
 const app = express();
 
 app.use(express.json());
- app.use(cors());
+
+// CONFIGURAÇÃO DE CORS ATUALIZADA
+// Em 2026, '*' libera para todos os dispositivos, ideal para testes iniciais
+app.use(cors({
+  origin: '*', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 
 // Listar usuários
 app.get('/usuarios', async (req, res) => {
@@ -15,23 +23,30 @@ app.get('/usuarios', async (req, res) => {
     const users = await prisma.user.findMany();
     res.json(users);
   } catch (error) {
+    console.error('Erro ao buscar:', error);
     res.status(500).json({ error: 'Erro ao buscar usuários.' });
   }
 });
 
-// Criar usuário
+// Criar usuário (ROTA CORRIGIDA COM TRATAMENTO P2002)
 app.post('/usuarios', async (req, res) => {
   try {
-    await prisma.user.create({
+    const novoUsuario = await prisma.user.create({
       data: {
         email: req.body.email, 
-        senha: req.body.senha // Corrigido de req.body.age para req.body.senha
+        senha: req.body.senha 
       }
     });
-    res.status(201).json({ message: 'Usuário criado com sucesso!' });
+    res.status(201).json(novoUsuario);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erro ao criar usuário.' });
+    // Verificação específica para o erro de e-mail duplicado (P2002)
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      res.status(409).json({ error: 'Este endereço de e-mail já está cadastrado.' });
+    } else {
+      // Para todos os outros erros (falha de conexão, etc.)
+      console.error('Erro inesperado ao criar usuário:', error);
+      res.status(500).json({ error: 'Erro interno do servidor.' });
+    }
   }
 });
 
@@ -63,8 +78,8 @@ app.delete('/usuarios/:id', async (req, res) => {
   }
 });
 
+// Porta configurada para o Render (sempre usa process.env.PORT)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  // Corrigido para usar crases (Template Literals)
   console.log(`Servidor rodando na porta ${PORT}`); 
 });
