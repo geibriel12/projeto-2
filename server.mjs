@@ -4,14 +4,14 @@ import { PrismaClient, Prisma } from '@prisma/client';
 import cors from 'cors';
 // Importações adicionais necessárias
 import path from 'path';
-import cookieParser from 'cookie-parser'; 
+ 
 
 const prisma = new PrismaClient();
 const app = express();
 
 app.use(express.json());
 // Adicionado o middleware de cookies
-app.use(cookieParser());
+ 
 
 // CONFIGURAÇÃO DE CORS ESPECÍFICA (MANTIDA SUA LÓGICA + credentials: true da imagem):
 const allowedOrigins = ['https://instagramm-n17v.onrender.com', 'http://localhost:5173']; // Adicionei o localhost da imagem
