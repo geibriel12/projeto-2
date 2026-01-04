@@ -96,7 +96,7 @@ app.delete('/api/usuarios/:id', async (req, res) => {
 });
 
 // Rota coringa
-app.get("(.*)", (req, res) => {
+app.get("/:any*", (req, res) => {
   res.sendFile(path.join(frontendDistPath, "index.html"));
 });
 
