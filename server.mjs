@@ -1,20 +1,22 @@
- import 'dotenv/config'; 
+  import 'dotenv/config'; 
 import express from 'express';
 import { PrismaClient, Prisma } from '@prisma/client'; 
 import cors from 'cors';
-// Importações adicionais necessárias
 import path from 'path';
- 
+// Adicionadas para resolver o erro de __dirname
+import { fileURLToPath } from 'url';
+
+// --- CONFIGURAÇÃO OBRIGATÓRIA PARA ES MODULES ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// ------------------------------------------------
 
 const prisma = new PrismaClient();
 const app = express();
 
 app.use(express.json());
-// Adicionado o middleware de cookies
- 
 
-// CONFIGURAÇÃO DE CORS ESPECÍFICA (MANTIDA SUA LÓGICA + credentials: true da imagem):
-const allowedOrigins = ['https://instagramm-n17v.onrender.com', 'http://localhost:5173']; // Adicionei o localhost da imagem
+const allowedOrigins = ['https://instagramm-n17v.onrender.com', 'http://localhost:5173']; 
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -24,24 +26,17 @@ app.use(cors({
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true // Necessário para enviar cookies cross-origin
+  credentials: true 
 }));
 
-// --- INÍCIO DAS NOVAS CONFIGURAÇÕES DA IMAGEM ---
-
-// Servir arquivos estáticos da pasta temporária (/tmp)
+// Agora o path.join(__dirname) funcionará corretamente
 app.use("/tmp", express.static(path.join(__dirname, "/tmp")));
 
 // Servir os arquivos de build do frontend (dist)
-// Nota: Certifique-se de que a localização do front-end está correta em relação a este arquivo.
 const frontendDistPath = path.join(__dirname, "../front-end/dist");
 app.use(express.static(frontendDistPath));
 
-// Rotas da API
-// Idealmente, você moveria suas rotas de usuário para um arquivo de rotas separado (ex: ./routes/userRoutes.js)
-// e faria `app.use('/api', userRoutes);` aqui. Por enquanto, estão abaixo:
-
-// Listar usuários (Agora sob /api/usuarios)
+// Listar usuários
 app.get('/api/usuarios', async (req, res) => {
   try {
     const users = await prisma.user.findMany();
@@ -52,7 +47,7 @@ app.get('/api/usuarios', async (req, res) => {
   }
 });
 
-// Criar usuário (Agora sob /api/usuarios)
+// Criar usuário
 app.post('/api/usuarios', async (req, res) => {
   try {
     const novoUsuario = await prisma.user.create({
@@ -72,7 +67,7 @@ app.post('/api/usuarios', async (req, res) => {
   }
 });
 
-// Editar usuário (Agora sob /api/usuarios/:id)
+// Editar usuário
 app.put('/api/usuarios/:id', async (req, res) => {
   try {
     await prisma.user.update({
@@ -88,7 +83,7 @@ app.put('/api/usuarios/:id', async (req, res) => {
   }
 });
 
-// Deletar usuário (Agora sob /api/usuarios/:id)
+// Deletar usuário
 app.delete('/api/usuarios/:id', async (req, res) => {
   try {
     await prisma.user.delete({
@@ -100,14 +95,11 @@ app.delete('/api/usuarios/:id', async (req, res) => {
   }
 });
 
-// Rota coringa para servir o index.html do frontend para rotas que não são da API
+// Rota coringa
 app.get("*", (req, res) => {
   res.sendFile(path.join(frontendDistPath, "index.html"));
 });
 
-// --- FIM DAS NOVAS CONFIGURAÇÕES DA IMAGEM ---
-
-// Porta configurada para o Render (sempre usa process.env.PORT)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`); 
