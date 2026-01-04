@@ -1,4 +1,4 @@
- import 'dotenv/config'; 
+  import 'dotenv/config'; 
 import express from 'express';
 import { PrismaClient, Prisma } from '@prisma/client'; 
 import cors from 'cors';
@@ -33,8 +33,9 @@ app.use(cors({
 app.use("/tmp", express.static(path.join(__dirname, "/tmp")));
 
 // Servir os arquivos de build do frontend (dist)
-// -- CAMINHO CORRIGIDO: --
-const frontendDistPath = path.join(__dirname, "../../front-end/dist");
+// -- CAMINHO CORRIGIDO AQUI: --
+// Assume que 'dist' está um nível acima do diretório atual de server.mjs
+const frontendDistPath = path.join(__dirname, "../dist"); 
 app.use(express.static(frontendDistPath));
 
 // Listar usuários
