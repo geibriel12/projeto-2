@@ -1,4 +1,4 @@
-  import 'dotenv/config'; 
+ import 'dotenv/config'; 
 import express from 'express';
 import { PrismaClient, Prisma } from '@prisma/client'; 
 import cors from 'cors';
@@ -33,7 +33,8 @@ app.use(cors({
 app.use("/tmp", express.static(path.join(__dirname, "/tmp")));
 
 // Servir os arquivos de build do frontend (dist)
-const frontendDistPath = path.join(__dirname, "../front-end/dist");
+// -- CAMINHO CORRIGIDO: --
+const frontendDistPath = path.join(__dirname, "../../front-end/dist");
 app.use(express.static(frontendDistPath));
 
 // Listar usuários
@@ -95,7 +96,7 @@ app.delete('/api/usuarios/:id', async (req, res) => {
   }
 });
 
-// Rota coringa
+// Rota coringa (usando regex, que você já corrigiu)
 app.get(/^(?!\/api).+/, (req, res) => {
   res.sendFile(path.join(frontendDistPath, "index.html"));
 });
