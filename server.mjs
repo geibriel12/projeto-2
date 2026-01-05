@@ -49,7 +49,7 @@ app.post('/usuarios', async (req, res) => {
 // Outras rotas (GET, PUT, DELETE) continuam iguais...
 
 // --- INICIALIZAÇÃO ---
-// Render exige escuta em 0.0.0.0 e usa a porta da variável process.env.PORT
+// Render exige escuta em 0.0.0.0 e usa a porta da variável process.env.PORTj
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor rodando na porta ${PORT}`); 
