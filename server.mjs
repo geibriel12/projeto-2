@@ -1,21 +1,14 @@
-  import 'dotenv/config'; 
+import 'dotenv/config'; 
 import express from 'express';
 import { PrismaClient, Prisma } from '@prisma/client'; 
 import cors from 'cors';
-import path from 'path';
-// Adicionadas para resolver o erro de __dirname
-import { fileURLToPath } from 'url';
-
-// --- CONFIGURAÇÃO OBRIGATÓRIA PARA ES MODULES ---
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-// ------------------------------------------------
 
 const prisma = new PrismaClient();
 const app = express();
 
 app.use(express.json());
 
+// Configuração de CORS: permite apenas origens específicas acessarem sua API
 const allowedOrigins = ['https://instagramm-n17v.onrender.com', 'http://localhost:5173']; 
 app.use(cors({
   origin: function (origin, callback) {
@@ -28,15 +21,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true 
 }));
-
-// Agora o path.join(__dirname) funcionará corretamente
-app.use("/tmp", express.static(path.join(__dirname, "/tmp")));
-
-// Servir os arquivos de build do frontend (dist)
-// -- CAMINHO CORRIGIDO AQUI: --
-// Assume que 'dist' está um nível acima do diretório atual de server.mjs
-const frontendDistPath = path.join(__dirname, "../dist"); 
-app.use(express.static(frontendDistPath));
 
 // Listar usuários
 app.get('/api/usuarios', async (req, res) => {
@@ -95,11 +79,6 @@ app.delete('/api/usuarios/:id', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: 'Erro ao deletar usuário.' });
   }
-});
-
-// Rota coringa (usando regex, que você já corrigiu)
-app.get(/^(?!\/api).+/, (req, res) => {
-  res.sendFile(path.join(frontendDistPath, "index.html"));
 });
 
 const PORT = process.env.PORT || 3000;
