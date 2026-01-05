@@ -1,4 +1,4 @@
-import 'dotenv/config'; 
+ import 'dotenv/config'; 
 import express from 'express';
 import { PrismaClient, Prisma } from '@prisma/client'; 
 import cors from 'cors';
@@ -8,10 +8,16 @@ const app = express();
 
 app.use(express.json());
 
-// Configuração de CORS: permite apenas origens específicas acessarem sua API
-const allowedOrigins = ['https://instagramm-n17v.onrender.com', 'http://localhost:5173', 'https://dashboard.render.com/static/srv-d5c2i6ruibrs73crudl0/env']; 
+// CONFIGURAÇÃO DE CORS
+// Adicione aqui a URL do seu frontend quando fizer o deploy dele
+const allowedOrigins = [
+  'https://instagramm-n17v.onrender.com', // Seu frontend no Render
+  'http://localhost:5173'                  // Seu ambiente local (Vite)
+]; 
+
 app.use(cors({
   origin: function (origin, callback) {
+    // Permite requisições sem origin (como mobile apps ou curl) ou se estiver na lista
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -21,6 +27,8 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true 
 }));
+
+// --- ROTAS ---
 
 // Listar usuários
 app.get('/api/usuarios', async (req, res) => {
@@ -81,7 +89,12 @@ app.delete('/api/usuarios/:id', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+// --- INICIALIZAÇÃO ---
+
+// No Render, a porta 10000 é o padrão se a variável process.env.PORT não estiver definida
+const PORT = process.env.PORT || 10000;
+
+// IMPORTANTE: Adicionado '0.0.0.0' para o Render conseguir mapear a porta corretamente
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor rodando na porta ${PORT}`); 
-});i
+});
