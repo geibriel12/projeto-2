@@ -9,7 +9,7 @@ const app = express();
 app.use(express.json());
 
 // Configuração de CORS: permite apenas origens específicas acessarem sua API
-const allowedOrigins = ['https://instagramm-n17v.onrender.com', 'http://localhost:5173']; 
+const allowedOrigins = ['https://instagramm-n17v.onrender.com', 'http://localhost:5173', 'https://dashboard.render.com/static/srv-d5c2i6ruibrs73crudl0/env']; 
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -84,4 +84,4 @@ app.delete('/api/usuarios/:id', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`); 
-});
+});i
